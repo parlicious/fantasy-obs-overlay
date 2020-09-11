@@ -3,6 +3,7 @@ import logo from './logo.svg';
 import './App.css';
 import {getEspnFantasyData, getWeekScores, tester} from "./fantasy";
 import styled from 'styled-components';
+import {useInterval} from "./hooks";
 
 const ScoreRowContainer = styled.div`
   display: flex;
@@ -54,13 +55,16 @@ function GameScore({home, away}) {
 
 function App() {
     const [games, setGames] = useState([]);
-    useEffect(() => {
-        const run = async () => {
-            const games = await getWeekScores();
-            setGames(games);
-        }
-        run();
+
+    useEffect(() => async () => {
+        const games = await getWeekScores();
+        setGames(games);
     }, []);
+
+    useInterval(async () => {
+        const games = await getWeekScores();
+        setGames(games);
+    }, 10000);
 
     return (
         <ScoreRowContainer>
