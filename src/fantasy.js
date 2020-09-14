@@ -1,5 +1,3 @@
-
-
 export const getEspnFantasyData = async () => {
     const requestOptions = {
         method: 'GET',
@@ -11,33 +9,55 @@ export const getEspnFantasyData = async () => {
 }
 
 const getCurrentScoreForPlayer = player => player.rosterForMatchupPeriod.appliedStatTotal || 0;
+const getProjectedScoreForPlayer = player => player.totalProjectedPointsLive || 0;
 const getTeamName = team => `${team?.location} ${team?.nickname}`
+const getGamesThisWeek = fantasyData => fantasyData.schedule.filter(game => game.matchupPeriodId === fantasyData.status.currentMatchupPeriod)
 
-export const getWeekScores = async () => {
+export const getWeekScores = async (oldGames) => {
     const fantasyData = await getEspnFantasyData();
-    const teams = fantasyData.teams.reduce((acc, val) => {
-        acc[val.id] = val;
-        return acc;
-    }, {})
+    const teams = listWithIdsToObjectById(fantasyData.teams);
+    const previousScores = listWithIdsToObjectById(oldGames || []);
 
     const generateGameScore = (game) => {
         return {
+            id: game.id,
             home: {
                 name: getTeamName(teams[game.home.teamId]),
-                score: getCurrentScoreForPlayer(game.home).toFixed(2)
+                actual: getCurrentScoreForPlayer(game.home).toFixed(2),
+                projected: getProjectedScoreForPlayer(game.home).toFixed(2),
+                change: getCurrentScoreForPlayer(game.home).toFixed(2) - (previousScores[game.id]?.home || 0)
             },
             away: {
                 name: getTeamName(teams[game.away.teamId]),
-                score: getCurrentScoreForPlayer(game.away).toFixed(2)
+                actual: getCurrentScoreForPlayer(game.away).toFixed(2),
+                projected: getProjectedScoreForPlayer(game.away).toFixed(2),
+                change: getCurrentScoreForPlayer(game.away).toFixed(2) - (previousScores[game.id]?.away || 0)
             },
         }
     }
 
-    const currentMatchup = fantasyData.status.currentMatchupPeriod;
-    return fantasyData.schedule
-        .filter(game => game.matchupPeriodId === currentMatchup)
-        .map(generateGameScore)
+    return getGamesThisWeek(fantasyData).map(generateGameScore)
 }
-export const tester = async () => {
-    await getWeekScores()
+
+const listWithIdsToObjectById = (list) => {
+    return list.reduce((acc, val) => {
+        acc[val.id] = val;
+        return acc;
+    }, {})
 }
+
+export const getMatchups = async () => {
+    const lineupSlotsById = {
+        2: 'RB',
+        4: 'WR',
+        0: 'QB',
+        23: 'FLEX',
+        6: 'TE',
+        16: 'D/ST',
+        17: 'K'
+    }
+
+    const fantasyData = await getEspnFantasyData()
+    const games = getGamesThisWeek(fantasyData);
+
+};
