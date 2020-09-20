@@ -2,7 +2,7 @@ import React, {useEffect, useState} from 'react';
 import './App.css';
 import {getWeekScores} from "./fantasy";
 import styled, {css, keyframes} from 'styled-components';
-import {useConfig, useAdminData, useInterval, useReloadOnVersionChange, useUpdatingScores} from "./hooks";
+import {useConfig, useInterval, useReloadOnVersionChange, useUpdatingScores} from "./hooks";
 import {BrowserRouter as Router, Route, Switch,} from "react-router-dom";
 
 const ScoreRowContainer = styled.div`
@@ -161,13 +161,13 @@ function LeagueScores() {
     const config = useConfig();
 
     useEffect(() => async () => {
-        const games = await getWeekScores(games);
-        setGames(games)
-    }, []);
+        const newGames = await getWeekScores(games);
+        setGames(newGames)
+    }, [games]);
 
     useInterval(async () => {
-        const games = await getWeekScores(games);
-        setGames(games);
+        const newGames = await getWeekScores(games);
+        setGames(newGames);
     }, config.refreshInterval);
 
     return (

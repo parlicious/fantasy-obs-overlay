@@ -20,6 +20,7 @@
     "start": "react-scripts start --no-cache",
     "build": "react-scripts build",
     "test": "react-scripts test",
+    "lint": "./node_modules/eslint/bin/eslint.js src/**/*.js",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {

@@ -87,4 +87,5 @@ export const getMatchups = async () => {
     const fantasyData = await getEspnFantasyData()
     const games = getGamesThisWeek(fantasyData);
 
+    console.log(games, lineupSlotsById);
 };

@@ -1,4 +1,4 @@
-import React, {useEffect, useRef, useState} from 'react';
+import {useEffect, useRef, useState} from 'react';
 import {db} from "./firebase";
 import {getWeekScores} from "./fantasy";
 
@@ -7,7 +7,7 @@ export function useInterval(callback, delay) {
 
     useEffect(() => {
         callback();
-    }, []);
+    }, [callback]);
 
     // Remember the latest callback.
     useEffect(() => {
@@ -73,7 +73,7 @@ export function useUpdatingScores() {
             }
         })
         setGames(newGames);
-    }, []);
+    }, [games]);
 
     useInterval(async () => {
         const newGames = await getWeekScores(games);
