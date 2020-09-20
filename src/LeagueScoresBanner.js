@@ -128,10 +128,11 @@ const PlayerUpdate = ({playerDelta}) => {
 
 const DropdownContainer = styled.div`
   position: absolute;
-  ${props => props.placement === 'top' ? "top: calc(100% + 0.5em);" : "bottom: calc(100% + 0.5em);"};
-  width: calc(100% - 1em + 2px);
-  padding: 1em;
-  background: rgba(0, 0, 0, .65);
+  --padding: 0.5em;
+  ${props => props.placement === 'top' ? "top: calc(100% + calc(var(--padding)/2));" : "bottom: 100%;"};
+  width: calc(100% - var(--padding) + 2px);
+  //background: rgba(0, 0, 0, .65);
+  padding: var(--padding);
   animation: ${dropdownAnimation} 300ms;
   ${props => props.placement === 'top' ? "border-radius:  0 0 1em 1em;" : "border-radius:  1em 1em 0 0;"};
   ${props => props.placement === 'top' ? "transform-origin: top center;" : "transform-origin: bottom center;"};
