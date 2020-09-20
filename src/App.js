@@ -1,16 +1,9 @@
-import React, {useCallback, useEffect, useRef, useState} from 'react';
-import logo from './logo.svg';
+import React, {useEffect, useState} from 'react';
 import './App.css';
-import {getEspnFantasyData, getWeekScores, tester} from "./fantasy";
+import {getWeekScores} from "./fantasy";
 import styled, {css, keyframes} from 'styled-components';
-import {useConfig, useInterval, useReloadOnVersionChange, useUpdatingScores} from "./hooks";
-import {
-    BrowserRouter as Router,
-    Switch,
-    Route,
-    Link
-} from "react-router-dom";
-import {db} from "./firebase";
+import {useConfig, useAdminData, useInterval, useReloadOnVersionChange, useUpdatingScores} from "./hooks";
+import {BrowserRouter as Router, Route, Switch,} from "react-router-dom";
 
 const ScoreRowContainer = styled.div`
   display: flex;
@@ -50,7 +43,7 @@ const worsenPulse = keyframes`
 `
 
 const changeAnimation = css`
-  animation: ${props => props.change > 0 ? improvePulse : worsenPulse} 4s linear 3;
+  animation: ${props => props.change > 0 ? improvePulse : worsenPulse} 8s linear 3;
 `
 
 const GameContainer = styled.div`
@@ -62,7 +55,7 @@ const GameContainer = styled.div`
   grid-row-gap: 10px;
   border: 2px white;
   border-style: none none none solid;
-  
+  position: relative;
   font-size: 1vw;
 `
 
@@ -84,10 +77,11 @@ const ProjectScoreContainer = styled.span`
   font-weight: normal;
 `
 
-const Score = ({actual, projected, change}) => {
+const Score = ({actual, projected, change, inPlay}) => {
+    if(change !== 0) console.log(change);
     return (
         <ScoreContainer change={change}>
-            {actual} {" "}
+            {actual} {" "} {inPlay > 0 && `(${inPlay})`} {" "}
             <ProjectScoreContainer>
                 Proj: {projected}
             </ProjectScoreContainer>
@@ -95,6 +89,28 @@ const Score = ({actual, projected, change}) => {
     )
 }
 
+const dropdownAnimation = keyframes`
+   0% {
+   transform: scaleY(0)
+   }
+   80% {
+     transform: scaleY(1.1)
+   }
+   100% {
+     transform: scaleY(1)
+   }
+`
+
+const DropdownContainer = styled.div`
+  position: absolute;
+  top: calc(100% + 0.5em);
+  width: calc(100% - 1em + 2px);
+  padding: 1em;
+  background: rgba(0, 0, 0, .65);
+  animation: ${dropdownAnimation} 300ms;
+  transform-origin: top center;
+  border-radius:  0 0 1em 1em;
+`
 
 function GameScore({home, away}) {
     return (
@@ -106,6 +122,7 @@ function GameScore({home, away}) {
                 actual={home.actual}
                 projected={home.projected}
                 change={home.change}
+                inPlay={home.inPlay}
             />
             <NameContainer>
                 {away.name}
@@ -114,7 +131,27 @@ function GameScore({home, away}) {
                 actual={away.actual}
                 projected={away.projected}
                 change={away.change}
+                inPlay={away.inPlay}
             />
+            {home.change > 0 &&
+            <DropdownContainer>
+                {home.name}
+                <Score
+                    actual={home.actual}
+                    projected={home.projected}
+                    change={home.change}
+                />
+            </DropdownContainer>}
+
+            {away.change > 0 &&
+            <DropdownContainer>
+                {away.name}
+                <Score
+                    actual={away.actual}
+                    projected={away.projected}
+                    change={away.change}
+                />
+            </DropdownContainer>}
         </GameContainer>
     )
 }
@@ -124,12 +161,12 @@ function LeagueScores() {
     const config = useConfig();
 
     useEffect(() => async () => {
-        const games = await getWeekScores();
-        setGames(games);
+        const games = await getWeekScores(games);
+        setGames(games)
     }, []);
 
     useInterval(async () => {
-        const games = await getWeekScores();
+        const games = await getWeekScores(games);
         setGames(games);
     }, config.refreshInterval);
 
@@ -150,7 +187,7 @@ const translate = keyframes`
 `
 
 const bannerCss = css`
-  animation: ${translate} 45s linear infinite;
+  animation: ${translate} ${props => props.scrollTime || 45}s linear infinite;
   background: rgba(0, 0, 0, .65);
   position: absolute;
   width: 150vw;
@@ -169,15 +206,15 @@ const BannerContainerOffset = styled.div`
   margin-left: 150vw;
 `
 
-function Banner({children}) {
+function Banner({children, scrollTime}) {
     const numChildren = React.Children.count(children);
     return (
         <div>
-            <BannerContainer columns={numChildren}>
+            <BannerContainer columns={numChildren} scrollTime={scrollTime}>
                 {children}
             </BannerContainer>
 
-            <BannerContainerOffset columns={numChildren}>
+            <BannerContainerOffset columns={numChildren} scrollTime={scrollTime}>
                 {children}
             </BannerContainerOffset>
         </div>
@@ -186,18 +223,14 @@ function Banner({children}) {
 
 function UpdatesBanner() {
     const games = useUpdatingScores();
-
+    const config = useConfig();
     return (
         <div>
-            <Banner>
-                {games.map(GameScore)}
+            <Banner scrollTime={config.scrollTime}>
+                {config.message?.length > 0 ? <h1> {config.message} </h1> : games.map(GameScore)}
             </Banner>
         </div>
     )
-}
-
-function Matchups() {
-
 }
 
 function App() {
@@ -206,10 +239,10 @@ function App() {
         <Router>
             <Switch>
                 <Route exact path='/'>
-                    <LeagueScores/>
+                    <UpdatesBanner/>
                 </Route>
                 <Route path='/updates'>
-                    <UpdatesBanner/>
+                    <LeagueScores/>
                 </Route>
                 <Route path='/matchups'>
                     <UpdatesBanner/>

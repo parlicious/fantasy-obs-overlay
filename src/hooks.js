@@ -32,8 +32,7 @@ export function useReloadOnVersionChange() {
     const onVersionUpdate = (doc) => {
         const newVersion = doc.data().version;
         if(version.current && version.current !== newVersion){
-            // eslint-disable-next-line no-restricted-globals
-            location.reload();
+            window.location.reload();
         } else {
             version.current = doc.data().version;
         }
@@ -66,13 +65,19 @@ export function useUpdatingScores() {
     const config = useConfig();
 
     useEffect(() => async () => {
-        const games = await getWeekScores(games);
-        setGames(games);
+        const newGames = await getWeekScores(games);
+        newGames.forEach(game => {
+            if(game.home.change !== 0 || game.away.change !== 0){
+                console.log('Change Detected: ')
+                console.log(game);
+            }
+        })
+        setGames(newGames);
     }, []);
 
     useInterval(async () => {
-        const games = await getWeekScores();
-        setGames(games);
+        const newGames = await getWeekScores(games);
+        setGames(newGames);
     }, config.refreshInterval);
 
     return games

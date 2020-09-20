@@ -8,10 +8,33 @@ export const getEspnFantasyData = async () => {
     return response.json()
 }
 
-const getCurrentScoreForPlayer = player => player.rosterForMatchupPeriod.appliedStatTotal || 0;
-const getProjectedScoreForPlayer = player => player.totalProjectedPointsLive || 0;
+const getCurrentScoreForPlayer = player => player?.rosterForMatchupPeriod?.appliedStatTotal || 0;
+const getProjectedScoreForPlayer = player => player?.totalProjectedPointsLive || 0;
 const getTeamName = team => `${team?.location} ${team?.nickname}`
 const getGamesThisWeek = fantasyData => fantasyData.schedule.filter(game => game.matchupPeriodId === fantasyData.status.currentMatchupPeriod)
+const teamToPlayerMap = team => (team.rosterForCurrentScoringPeriod?.entries || []).map(p => p.playerPoolEntry).reduce((acc, val) => {
+    acc[val.playerId] = val;
+    return acc;
+}, {});
+
+const getInPlayCount = team => team?.rosterForMatchupPeriod.entries.length || 0;
+
+const diffPlayersScores = (oldPlayers, newPlayers) => Object.values(newPlayers).map(id => ({
+    id: id,
+    player: newPlayers[id],
+    diff: (newPlayers[id]?.appliedStatTotal || 0) - (oldPlayers[id]?.appliedStatTotal || 0)
+}))
+
+const generatePlayerDeltas = (oldGame, newGame) => {
+    if (oldGame) {
+        return {
+            home: diffPlayersScores(teamToPlayerMap(oldGame.home), teamToPlayerMap(newGame.home)),
+            away: diffPlayersScores(teamToPlayerMap(oldGame.away), teamToPlayerMap(newGame.away))
+        }
+    } else {
+        return {}
+    }
+}
 
 export const getWeekScores = async (oldGames) => {
     const fantasyData = await getEspnFantasyData();
@@ -21,17 +44,21 @@ export const getWeekScores = async (oldGames) => {
     const generateGameScore = (game) => {
         return {
             id: game.id,
+            full: game,
+            deltas: oldGames ? generatePlayerDeltas(previousScores[game.id], game) : {},
             home: {
                 name: getTeamName(teams[game.home.teamId]),
                 actual: getCurrentScoreForPlayer(game.home).toFixed(2),
                 projected: getProjectedScoreForPlayer(game.home).toFixed(2),
-                change: getCurrentScoreForPlayer(game.home).toFixed(2) - (previousScores[game.id]?.home || 0)
+                inPlay: getInPlayCount(game.home),
+                change: previousScores[game.id] ? (getCurrentScoreForPlayer(game?.home)?.toFixed(2) || 0) - (previousScores[game.id]?.home.actual || 0) : 0
             },
             away: {
                 name: getTeamName(teams[game.away.teamId]),
                 actual: getCurrentScoreForPlayer(game.away).toFixed(2),
                 projected: getProjectedScoreForPlayer(game.away).toFixed(2),
-                change: getCurrentScoreForPlayer(game.away).toFixed(2) - (previousScores[game.id]?.away || 0)
+                inPlay: getInPlayCount(game.away),
+                change: previousScores[game.id] ? (getCurrentScoreForPlayer(game?.away)?.toFixed(2) || 0) - (previousScores[game.id]?.away.actual || 0) : 0
             },
         }
     }
