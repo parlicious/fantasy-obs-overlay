@@ -132,6 +132,7 @@ const DropdownContainer = styled.div`
   ${props => props.placement === 'top' ? "top: calc(100% + calc(var(--padding)/2));" : "bottom: 100%;"};
   width: calc(100% - var(--padding) + 2px);
   //background: rgba(0, 0, 0, .65);
+  background-color: #2f3136;
   padding: var(--padding);
   animation: ${dropdownAnimation} 300ms;
   ${props => props.placement === 'top' ? "border-radius:  0 0 1em 1em;" : "border-radius:  1em 1em 0 0;"};
