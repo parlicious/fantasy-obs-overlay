@@ -29,7 +29,7 @@ const diffPlayersScores = (oldPlayers, newPlayers) => Object.values(newPlayers).
 });
 
 const generatePlayerUpdates = (oldGame, newGame, homeOrAway) => diffPlayersScores(teamToPlayerMap(oldGame.full[homeOrAway]), teamToPlayerMap(newGame[homeOrAway]))
-        .filter(d => d.diff > 0)
+        .filter(d => d.diff !== 0)
         .map(d => {
             return {
                 ...d,

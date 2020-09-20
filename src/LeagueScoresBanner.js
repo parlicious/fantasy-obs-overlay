@@ -133,8 +133,8 @@ const DropdownContainer = styled.div`
   padding: 1em;
   background: rgba(0, 0, 0, .65);
   animation: ${dropdownAnimation} 300ms;
-  transform-origin: top center;
   ${props => props.placement === 'top' ? "border-radius:  0 0 1em 1em;" : "border-radius:  1em 1em 0 0;"};
+  ${props => props.placement === 'top' ? "transform-origin: top center;" : "transform-origin: bottom center;"};
 `
 
 function DropDown({deltas, placement}) {
