@@ -163,7 +163,7 @@ function LeagueScores() {
     useEffect(() => async () => {
         const newGames = await getWeekScores(games);
         setGames(newGames)
-    }, [games]);
+    }, []);
 
     useInterval(async () => {
         const newGames = await getWeekScores(games);

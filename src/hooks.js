@@ -7,7 +7,7 @@ export function useInterval(callback, delay) {
 
     useEffect(() => {
         callback();
-    }, [callback]);
+    }, []);
 
     // Remember the latest callback.
     useEffect(() => {
@@ -73,7 +73,7 @@ export function useUpdatingScores() {
             }
         })
         setGames(newGames);
-    }, [games]);
+    }, []);
 
     useInterval(async () => {
         const newGames = await getWeekScores(games);
