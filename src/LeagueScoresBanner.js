@@ -129,7 +129,7 @@ const PlayerUpdate = ({playerDelta}) => {
 const DropdownContainer = styled.div`
   position: absolute;
   --padding: 0.5em;
-  ${props => props.placement === 'top' ? "top: calc(100% + calc(var(--padding)/2));" : "bottom: 100%;"};
+  ${props => props.placement === 'top' ? "top: 100%;" : "bottom: 92%;"};
   width: calc(100% - var(--padding) + 2px);
   //background: rgba(0, 0, 0, .65);
   background-color: #2f3136;
