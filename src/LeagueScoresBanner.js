@@ -3,19 +3,6 @@ import React from "react";
 import {useConfig, useUpdatingScores} from "./hooks";
 import {Banner} from "./Banner";
 
-const ScoreRowContainer = styled.div`
-  display: flex;
-  flex-direction: row;
-  margin: 0 0;
-  justify-content: space-between;
-  color: white;
-  font-size: 1vw;
-  font-weight: bold;
-  
-  background: rgba(0, 0, 0, .65);
-  border-radius: 1em;
-`
-
 const improvePulse = keyframes`
   0% {
     color: #FFFFFF
@@ -76,7 +63,6 @@ const ProjectScoreContainer = styled.span`
 `
 
 const Score = ({actual, projected, change, inPlay}) => {
-    if(change !== 0) console.log(change);
     return (
         <ScoreContainer change={change}>
             {actual} {" "} {inPlay > 0 && `(${inPlay})`} {" "}
@@ -99,18 +85,72 @@ const dropdownAnimation = keyframes`
    }
 `
 
+const PlayerUpdateContainer = styled.div`
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+`
+
+const PlayerUpdateScore = ({score, diff}) => {
+    return (
+        <span>
+            {score} ({diff > 0 ? "+" : ""} {diff})
+        </span>
+    )
+}
+
+const PlayerUpdateTeamName = styled.span`
+  font-size: 0.5vw;
+`
+
+const PlayerUpdateNameContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+`
+
+const PlayerUpdate = ({playerDelta}) => {
+    const {name, score, diff, player, team} = playerDelta
+    return (
+        <PlayerUpdateContainer
+            key={name}>
+            <PlayerUpdateNameContainer>
+            <span>
+                {name}
+            </span>
+                <PlayerUpdateTeamName>
+                    {team}
+                </PlayerUpdateTeamName>
+            </PlayerUpdateNameContainer>
+            <PlayerUpdateScore score={score} diff={diff}/>
+        </PlayerUpdateContainer>
+    )
+}
+
 const DropdownContainer = styled.div`
   position: absolute;
-  top: calc(100% + 0.5em);
+  ${props => props.placement === 'top' ? "top: calc(100% + 0.5em);" : "bottom: calc(100% + 0.5em);"};
   width: calc(100% - 1em + 2px);
   padding: 1em;
   background: rgba(0, 0, 0, .65);
   animation: ${dropdownAnimation} 300ms;
   transform-origin: top center;
-  border-radius:  0 0 1em 1em;
+  ${props => props.placement === 'top' ? "border-radius:  0 0 1em 1em;" : "border-radius:  1em 1em 0 0;"};
 `
 
-function GameScore({home, away}) {
+function DropDown({deltas, placement}) {
+    if (deltas.length > 0) {
+        console.log('dropping');
+        return (
+            <DropdownContainer placement={placement}>
+                {deltas.map(d => <PlayerUpdate playerDelta={d}/>)}
+            </DropdownContainer>
+        )
+    } else {
+        return null;
+    }
+}
+
+function GameScore({home, away, deltas, config}) {
     return (
         <GameContainer key={`${home.name}${away.name}`}>
             <NameContainer>
@@ -131,25 +171,7 @@ function GameScore({home, away}) {
                 change={away.change}
                 inPlay={away.inPlay}
             />
-            {home.change > 0 &&
-            <DropdownContainer>
-                {home.name}
-                <Score
-                    actual={home.actual}
-                    projected={home.projected}
-                    change={home.change}
-                />
-            </DropdownContainer>}
-
-            {away.change > 0 &&
-            <DropdownContainer>
-                {away.name}
-                <Score
-                    actual={away.actual}
-                    projected={away.projected}
-                    change={away.change}
-                />
-            </DropdownContainer>}
+            <DropDown home={home} away={away} deltas={deltas} placement={config.placement}/>
         </GameContainer>
     )
 }
@@ -159,8 +181,8 @@ export function LeagueScoresBanner() {
     const config = useConfig();
     return (
         <div>
-            <Banner scrollTime={config.scrollTime}>
-                {config.message?.length > 0 ? <h1> {config.message} </h1> : games.map(GameScore)}
+            <Banner placement={config?.placement} scrollTime={config.scrollTime}>
+                {config.message?.length > 0 ? <h1> {config.message} </h1> : games.map(g => ({...g, config})).map(GameScore)}
             </Banner>
         </div>
     )

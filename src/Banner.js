@@ -22,23 +22,27 @@ const bannerCss = css`
 
 const BannerContainer = styled.div`
   ${bannerCss};
+  top: ${props => props.placement === 'top' ? 0 : 'auto'};
+  bottom: ${props => props.placement === 'bottom' ? 0 : 'auto'};
   margin-left: 0;
 `
 
 const BannerContainerOffset = styled.div`
   ${bannerCss};
+  top: ${props => props.placement === 'top' ? 0 : 'auto'};
+  bottom: ${props => props.placement === 'bottom' ? 0 : 'auto'};
   margin-left: 150vw;
 `
 
-export function Banner({children, scrollTime}) {
+export function Banner({children, scrollTime, placement}) {
     const numChildren = React.Children.count(children);
     return (
         <div>
-            <BannerContainer columns={numChildren} scrollTime={scrollTime}>
+            <BannerContainer placement={placement} columns={numChildren} scrollTime={scrollTime}>
                 {children}
             </BannerContainer>
 
-            <BannerContainerOffset columns={numChildren} scrollTime={scrollTime}>
+            <BannerContainerOffset placement={placement} columns={numChildren} scrollTime={scrollTime}>
                 {children}
             </BannerContainerOffset>
         </div>

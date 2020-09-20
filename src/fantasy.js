@@ -12,40 +12,54 @@ const getCurrentScoreForPlayer = player => player?.rosterForMatchupPeriod?.appli
 const getProjectedScoreForPlayer = player => player?.totalProjectedPointsLive || 0;
 const getTeamName = team => `${team?.location} ${team?.nickname}`
 const getGamesThisWeek = fantasyData => fantasyData.schedule.filter(game => game.matchupPeriodId === fantasyData.status.currentMatchupPeriod)
-const teamToPlayerMap = team => (team.rosterForCurrentScoringPeriod?.entries || []).map(p => p.playerPoolEntry).reduce((acc, val) => {
-    acc[val.playerId] = val;
+const teamToPlayerMap = team => (team.rosterForMatchupPeriod?.entries || []).map(p => p.playerPoolEntry).reduce((acc, val) => {
+    acc[val.player.id] = val;
     return acc;
 }, {});
 
 const getInPlayCount = team => team?.rosterForMatchupPeriod.entries.length || 0;
 
-const diffPlayersScores = (oldPlayers, newPlayers) => Object.values(newPlayers).map(id => ({
-    id: id,
-    player: newPlayers[id],
-    diff: (newPlayers[id]?.appliedStatTotal || 0) - (oldPlayers[id]?.appliedStatTotal || 0)
-}))
+const diffPlayersScores = (oldPlayers, newPlayers) => Object.values(newPlayers).map(player => {
+    const id = player.id;
+    return {
+        id: id,
+        player: newPlayers[id],
+        diff: (newPlayers[id]?.appliedStatTotal || 0) - (oldPlayers[id]?.appliedStatTotal || 0)
+    }
+});
+
+const generatePlayerUpdates = (oldGame, newGame, homeOrAway) => diffPlayersScores(teamToPlayerMap(oldGame.full[homeOrAway]), teamToPlayerMap(newGame[homeOrAway]))
+        .filter(d => d.diff > 0)
+        .map(d => {
+            return {
+                ...d,
+                team: oldGame[homeOrAway].name,
+                name: d.player.player.fullName,
+                score: d.player.appliedStatTotal.toFixed(2),
+                diff: d.diff.toFixed(2),
+            }
+        });
 
 const generatePlayerDeltas = (oldGame, newGame) => {
     if (oldGame) {
-        return {
-            home: diffPlayersScores(teamToPlayerMap(oldGame.home), teamToPlayerMap(newGame.home)),
-            away: diffPlayersScores(teamToPlayerMap(oldGame.away), teamToPlayerMap(newGame.away))
-        }
+        return ['home', 'away'].flatMap(a => generatePlayerUpdates(oldGame, newGame, a));
     } else {
-        return {}
+        return []
     }
 }
 
 export const getWeekScores = async (oldGames) => {
+
     const fantasyData = await getEspnFantasyData();
     const teams = listWithIdsToObjectById(fantasyData.teams);
     const previousScores = listWithIdsToObjectById(oldGames || []);
 
     const generateGameScore = (game) => {
+        const prevGame = previousScores[game.id];
         return {
             id: game.id,
             full: game,
-            deltas: oldGames ? generatePlayerDeltas(previousScores[game.id], game) : {},
+            deltas: oldGames ? generatePlayerDeltas(prevGame, game) : {},
             home: {
                 name: getTeamName(teams[game.home.teamId]),
                 actual: getCurrentScoreForPlayer(game.home).toFixed(2),
@@ -63,7 +77,8 @@ export const getWeekScores = async (oldGames) => {
         }
     }
 
-    return getGamesThisWeek(fantasyData).map(generateGameScore)
+    const results = getGamesThisWeek(fantasyData).map(generateGameScore);
+    return results;
 }
 
 const listWithIdsToObjectById = (list) => {
