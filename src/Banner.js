@@ -13,6 +13,7 @@ const translate = keyframes`
 const bannerCss = css`
   animation: ${translate} ${props => props.scrollTime || 45}s linear infinite;
   background: rgba(0, 0, 0, .65);
+  left: 0;
   position: absolute;
   width: 150vw;
   display: grid;

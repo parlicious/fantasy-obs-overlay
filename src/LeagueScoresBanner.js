@@ -139,7 +139,6 @@ const DropdownContainer = styled.div`
 
 function DropDown({deltas, placement}) {
     if (deltas.length > 0) {
-        console.log('dropping');
         return (
             <DropdownContainer placement={placement}>
                 {deltas.map(d => <PlayerUpdate playerDelta={d}/>)}
