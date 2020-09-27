@@ -1,4 +1,4 @@
-import {useEffect, useRef, useState} from 'react';
+import {useCallback, useEffect, useRef, useState} from 'react';
 import {db} from "./firebase";
 import {getWeekScores} from "./fantasy";
 
@@ -24,6 +24,30 @@ export function useInterval(callback, delay) {
             return () => clearInterval(id);
         }
     }, [delay]);
+}
+
+export const useTimeout = (callback, timeout) => {
+    const timeoutIdRef = useRef();
+    const cancel = useCallback(
+        () => {
+            const timeoutId = timeoutIdRef.current;
+            if (timeoutId) {
+                timeoutIdRef.current = undefined;
+                clearTimeout(timeoutId);
+            }
+        },
+        [timeoutIdRef],
+    );
+
+    useEffect(
+        () => {
+            timeoutIdRef.current = setTimeout(callback, timeout);
+            return cancel;
+        },
+        [callback, timeout, cancel],
+    );
+
+    return cancel;
 }
 
 export function useReloadOnVersionChange() {
@@ -72,12 +96,13 @@ export function useUpdatingScores() {
                 console.log(game);
             }
         })
-        setGames(newGames);
     }, []);
 
     useInterval(async () => {
         const newGames = await getWeekScores(games);
-        setGames(newGames);
+        setTimeout(() => {
+            setGames(newGames);
+        }, 1000 * config.throttlingOffset);
     }, config.refreshInterval);
 
     return games
