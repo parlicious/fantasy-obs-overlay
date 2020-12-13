@@ -11,7 +11,7 @@ export const getEspnFantasyData = async () => {
 const getCurrentScoreForPlayer = player => player?.rosterForMatchupPeriod?.appliedStatTotal || 0;
 const getProjectedScoreForPlayer = player => player?.totalProjectedPointsLive || 0;
 const getTeamName = team => `${team?.location} ${team?.nickname}`
-const getGamesThisWeek = fantasyData => fantasyData.schedule.filter(game => game.matchupPeriodId === fantasyData.status.currentMatchupPeriod)
+const getGamesThisWeek = fantasyData => fantasyData.schedule.filter(game => game.matchupPeriodId === fantasyData.status.currentMatchupPeriod && game.away)
 const teamToPlayerMap = team => (team.rosterForMatchupPeriod?.entries || []).map(p => p.playerPoolEntry).reduce((acc, val) => {
     acc[val.player.id] = val;
     return acc;
