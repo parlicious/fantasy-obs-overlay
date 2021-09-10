@@ -4,7 +4,7 @@ export const getEspnFantasyData = async () => {
         redirect: 'follow'
     };
 
-    const response = await fetch("https://fantasy.espn.com/apis/v3/games/ffl/seasons/2020/segments/0/leagues/1101603?view=mMatchup&view=mMatchupScore&view=mRoster&view=mScoreboard&view=mSettings&view=mStatus&view=mTeam&view=modular&view=mNav", requestOptions)
+    const response = await fetch("https://fantasy.espn.com/apis/v3/games/ffl/seasons/2021/segments/0/leagues/1101603?view=mMatchup&view=mMatchupScore&view=mRoster&view=mScoreboard&view=mSettings&view=mStatus&view=mTeam&view=modular&view=mNav", requestOptions)
     return response.json()
 }
 
