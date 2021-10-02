@@ -33,7 +33,7 @@ const BannerContainerOffset = styled.div`
   ${bannerCss};
   top: ${props => props.placement === 'top' ? 0 : 'auto'};
   bottom: ${props => props.placement === 'bottom' ? 0 : 'auto'};
-  margin-left: 150vw;
+  margin-left: 149.9vw;
 `
 
 export function Banner({children, scrollTime, placement}) {
