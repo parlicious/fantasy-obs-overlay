@@ -1,10 +1,10 @@
-export const getEspnFantasyData = async () => {
+export const getEspnFantasyData = async (year) => {
     const requestOptions = {
         method: 'GET',
         redirect: 'follow'
     };
 
-    const response = await fetch("https://fantasy.espn.com/apis/v3/games/ffl/seasons/2021/segments/0/leagues/1101603?view=mMatchup&view=mMatchupScore&view=mRoster&view=mScoreboard&view=mSettings&view=mStatus&view=mTeam&view=modular&view=mNav", requestOptions)
+    const response = await fetch(`https://fantasy.espn.com/apis/v3/games/ffl/seasons/${year}/segments/0/leagues/1101603?view=mMatchup&view=mMatchupScore&view=mRoster&view=mScoreboard&view=mSettings&view=mStatus&view=mTeam&view=modular&view=mNav`, requestOptions)
     return response.json()
 }
 
@@ -48,9 +48,9 @@ const generatePlayerDeltas = (oldGame, newGame) => {
     }
 }
 
-export const getWeekScores = async (oldGames) => {
+export const getWeekScores = async (oldGames, year) => {
 
-    const fantasyData = await getEspnFantasyData();
+    const fantasyData = await getEspnFantasyData(year);
     const teams = listWithIdsToObjectById(fantasyData.teams);
     const previousScores = listWithIdsToObjectById(oldGames || []);
 
@@ -88,7 +88,7 @@ const listWithIdsToObjectById = (list) => {
     }, {})
 }
 
-export const getMatchups = async () => {
+export const getMatchups = async (year) => {
     const lineupSlotsById = {
         2: 'RB',
         4: 'WR',
@@ -99,7 +99,7 @@ export const getMatchups = async () => {
         17: 'K'
     }
 
-    const fantasyData = await getEspnFantasyData()
+    const fantasyData = await getEspnFantasyData(year)
     const games = getGamesThisWeek(fantasyData);
 
     console.log(games, lineupSlotsById);

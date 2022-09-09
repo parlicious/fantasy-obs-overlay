@@ -89,7 +89,7 @@ export function useUpdatingScores() {
     const config = useConfig();
 
     useEffect(() => async () => {
-        const newGames = await getWeekScores(games);
+        const newGames = await getWeekScores(games, config.year);
         newGames.forEach(game => {
             if(game.home.change !== 0 || game.away.change !== 0){
                 console.log('Change Detected: ')
@@ -99,7 +99,7 @@ export function useUpdatingScores() {
     }, []);
 
     useInterval(async () => {
-        const newGames = await getWeekScores(games);
+        const newGames = await getWeekScores(games, config.year);
         setTimeout(() => {
             setGames(newGames);
         }, 1000 * config.throttlingOffset);
