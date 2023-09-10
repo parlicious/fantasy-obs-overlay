@@ -1,4 +1,4 @@
-export const getEspnFantasyData = async (year) => {
+export const getEspnFantasyData = async (year = '2023') => {
     const requestOptions = {
         method: 'GET',
         redirect: 'follow'
@@ -10,7 +10,7 @@ export const getEspnFantasyData = async (year) => {
 
 const getCurrentScoreForPlayer = player => player?.rosterForMatchupPeriod?.appliedStatTotal || 0;
 const getProjectedScoreForPlayer = player => player?.totalProjectedPointsLive || 0;
-const getTeamName = team => `${team?.location} ${team?.nickname}`
+const getTeamName = team => `${team?.name}`
 const getGamesThisWeek = fantasyData => fantasyData.schedule.filter(game => game.matchupPeriodId === fantasyData.status.currentMatchupPeriod && game.away)
 const teamToPlayerMap = team => (team.rosterForMatchupPeriod?.entries || []).map(p => p.playerPoolEntry).reduce((acc, val) => {
     acc[val.player.id] = val;

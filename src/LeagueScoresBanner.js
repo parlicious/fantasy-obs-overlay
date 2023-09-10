@@ -35,8 +35,7 @@ const GameContainer = styled.div`
   margin: 0.5em;
   padding: 0.5em;
   display: grid;
-  grid-template-columns: 2fr 3fr;
-  grid-column-gap: 10px;
+  grid-template-columns: 3fr 4fr;
   grid-row-gap: 10px;
   border: 2px white;
   border-style: none none none solid;
@@ -46,6 +45,8 @@ const GameContainer = styled.div`
 
 const NameContainer = styled.div`
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 `
 
 const ScoreContainer = styled.div`
